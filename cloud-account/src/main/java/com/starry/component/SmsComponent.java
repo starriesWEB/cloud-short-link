@@ -11,6 +11,7 @@ import com.starry.properties.SmsProperties;
 import com.starry.utils.JsonUtil;
 import darabonba.core.client.ClientOverrideConfiguration;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -68,6 +69,7 @@ public class SmsComponent {
         client.close();
     }
 
+    @Async("threadPoolTaskExecutor")
     public void sendSms(String phone, String code) {
         SendSmsRequest sendSmsRequest = SendSmsRequest.builder()
                 .phoneNumbers(phone)

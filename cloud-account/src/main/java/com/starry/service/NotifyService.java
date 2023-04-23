@@ -1,5 +1,8 @@
 package com.starry.service;
 
+import com.starry.enums.SendCodeEnum;
+import com.starry.utils.JsonData;
+
 /**
  * @author starry
  * @version 1.0
@@ -11,5 +14,5 @@ public interface NotifyService {
     /**
      * 发送短信
      */
-    void sendSms(String phone);
+    JsonData sendSms(SendCodeEnum sendCodeEnum, String to);
 }
