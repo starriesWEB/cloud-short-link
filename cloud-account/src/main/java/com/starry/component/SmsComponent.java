@@ -32,12 +32,12 @@ public class SmsComponent {
     @Resource
     private SmsProperties smsProperties;
 
-    private static final HttpClient httpClient;
+    private static final HttpClient HTTP_CLIENT;
     private static final String CODE_OK = "OK";
     private static AsyncClient client;
 
     static {
-        httpClient = new ApacheAsyncHttpClientBuilder()
+        HTTP_CLIENT = new ApacheAsyncHttpClientBuilder()
                 .connectionTimeout(Duration.ofSeconds(10))
                 .responseTimeout(Duration.ofSeconds(10))
                 .maxConnections(128)
@@ -54,7 +54,7 @@ public class SmsComponent {
                 .build());
         client = AsyncClient.builder()
                 .region(smsProperties.getRegion())
-                .httpClient(httpClient)
+                .httpClient(HTTP_CLIENT)
                 .credentialsProvider(provider)
                 .overrideConfiguration(
                         ClientOverrideConfiguration.create()
