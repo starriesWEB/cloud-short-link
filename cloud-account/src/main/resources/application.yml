@@ -40,4 +40,10 @@ sms:
   sign-name: 乐优商城
   template-code: SMS_206561965
   template-param: '{"code":"%s"}'
+aliyun:
+  oss:
+    bucket-name: short-link-cloud
+    endpoint: oss-cn-qingdao.aliyuncs.com
+    access-key-id: LTAI5t8N2UQL1b6jAT3GTqHg
+    access-key-secret: UnXHx4uPYqthruSFmNqjG7ZEIspJAX
 
