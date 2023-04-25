@@ -1,6 +1,10 @@
 package com.starry.manager.impl;
 
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.starry.manager.AccountManager;
+import com.starry.mapper.AccountMapper;
+import com.starry.model.AccountDO;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -12,5 +16,18 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j
 @Component
+@AllArgsConstructor
 public class AccountManagerImpl implements AccountManager {
+
+    private final AccountMapper accountMapper;
+
+    @Override
+    public int insert(AccountDO accountDO) {
+        return accountMapper.insert(accountDO);
+    }
+
+    @Override
+    public AccountDO findByPhone(String phone) {
+        return accountMapper.selectOne(Wrappers.lambdaQuery(AccountDO.class).eq(AccountDO::getPhone, phone));
+    }
 }

@@ -15,4 +15,7 @@ public interface NotifyService {
      * 发送短信
      */
     JsonData sendSms(SendCodeEnum sendCodeEnum, String to);
+
+    boolean checkCode(SendCodeEnum sendCodeEnum, String to,String code);
+
 }

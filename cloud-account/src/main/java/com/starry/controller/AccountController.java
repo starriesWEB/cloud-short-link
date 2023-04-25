@@ -1,13 +1,13 @@
 package com.starry.controller;
 
+import com.starry.controller.request.AccountLoginRequest;
+import com.starry.controller.request.AccountRegisterRequest;
 import com.starry.enums.BizCodeEnum;
+import com.starry.service.AccountService;
 import com.starry.service.FileService;
 import com.starry.utils.JsonData;
 import lombok.AllArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
@@ -18,14 +18,25 @@ import org.springframework.web.multipart.MultipartFile;
  */
 @RestController
 @AllArgsConstructor
-@RequestMapping("api/v1/account")
+@RequestMapping("api/account/v1")
 public class AccountController {
 
     private final FileService fileService;
+    private final AccountService accountService;
 
     @PostMapping("upload")
     public JsonData uploadUserImg(@RequestPart("file") MultipartFile file) {
         String result = fileService.uploadUserImg(file);
         return result != null ? JsonData.buildSuccess(result) : JsonData.buildResult(BizCodeEnum.FILE_UPLOAD_USER_IMG_FAIL);
+    }
+
+    @PostMapping("register")
+    public JsonData register(@RequestBody AccountRegisterRequest registerRequest){
+        return accountService.register(registerRequest);
+    }
+
+    @PostMapping("login")
+    public JsonData login(@RequestBody AccountLoginRequest request){
+        return accountService.login(request);
     }
 }

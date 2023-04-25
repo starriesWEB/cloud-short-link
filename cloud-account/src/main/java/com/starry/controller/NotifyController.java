@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @RestController
 @AllArgsConstructor
-@RequestMapping("api/v1/notify")
+@RequestMapping("api/notify/v1")
 public class NotifyController {
 
     private final NotifyService notifyService;
