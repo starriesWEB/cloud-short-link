@@ -13,6 +13,7 @@ import com.starry.model.LoginUser;
 import com.starry.service.AccountService;
 import com.starry.service.NotifyService;
 import com.starry.utils.CommonUtil;
+import com.starry.utils.IDUtil;
 import com.starry.utils.JsonData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -53,7 +54,8 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, AccountDO>
 
 
         //生成唯一的账号  TODO
-        accountDO.setAccountNo(CommonUtil.getCurrentTimestamp());
+        accountDO.setAccountNo(Long.valueOf(IDUtil.genSnowFlakeID().toString()));
+
 
         //设置密码 秘钥 盐
         accountDO.setSecret("$1$" + CommonUtil.getStringNumRandom(8));

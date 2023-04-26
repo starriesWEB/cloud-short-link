@@ -64,7 +64,7 @@ public class LoginInterceptor implements HandlerInterceptor {
             threadLocal.set(loginUser);
             return true;
         }
-
+        CommonUtil.sendJsonMessage(response, JsonData.buildResult(BizCodeEnum.ACCOUNT_UNLOGIN));
         return false;
     }
 
