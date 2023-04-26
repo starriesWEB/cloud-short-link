@@ -7,7 +7,7 @@ import com.starry.enums.SendCodeEnum;
 import com.starry.service.NotifyService;
 import com.starry.utils.CommonUtil;
 import com.starry.utils.JsonData;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.*;
@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit;
  */
 @Slf4j
 @RestController
-@AllArgsConstructor
+@RequiredArgsConstructor
 @RequestMapping("api/notify/v1")
 public class NotifyController {
 

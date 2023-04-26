@@ -14,7 +14,7 @@ import com.starry.service.AccountService;
 import com.starry.service.NotifyService;
 import com.starry.utils.CommonUtil;
 import com.starry.utils.JsonData;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.Md5Crypt;
 import org.apache.commons.lang3.StringUtils;
@@ -26,7 +26,7 @@ import org.springframework.stereotype.Service;
  */
 @Slf4j
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class AccountServiceImpl extends ServiceImpl<AccountMapper, AccountDO>
         implements AccountService {
 

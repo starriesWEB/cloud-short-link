@@ -6,7 +6,7 @@ import com.starry.enums.BizCodeEnum;
 import com.starry.service.AccountService;
 import com.starry.service.FileService;
 import com.starry.utils.JsonData;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -17,7 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
  * @Description
  */
 @RestController
-@AllArgsConstructor
+@RequiredArgsConstructor
 @RequestMapping("api/account/v1")
 public class AccountController {
 

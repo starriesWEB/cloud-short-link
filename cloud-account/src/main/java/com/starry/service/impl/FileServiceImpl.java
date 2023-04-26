@@ -6,7 +6,7 @@ import com.aliyun.oss.model.PutObjectResult;
 import com.starry.properties.OSSProperties;
 import com.starry.service.FileService;
 import com.starry.utils.CommonUtil;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,7 +19,7 @@ import java.time.format.DateTimeFormatter;
 
 @Service
 @Slf4j
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class FileServiceImpl implements FileService {
 
     private final OSSProperties ossProperties;

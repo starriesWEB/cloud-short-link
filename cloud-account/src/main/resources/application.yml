@@ -10,11 +10,39 @@ spring:
         server-addr: 47.104.106.160:8848
         username: nacos
         password: nacos
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://47.104.106.160:3306/cloud_account?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
-    username: root
-    password: shortLink
+  shardingsphere:
+    datasource:
+      names: ds0
+      ds0:
+        connectionTimeoutMilliseconds: 30000
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        idleTimeoutMilliseconds: 60000
+        jdbc-url: jdbc:mysql://47.104.106.160:3306/cloud_account?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+        maintenanceIntervalMilliseconds: 30000
+        maxLifetimeMilliseconds: 1800000
+        maxPoolSize: 50
+        minPoolSize: 50
+        username: root
+        password: shortLink
+        type: com.zaxxer.hikari.HikariDataSource
+    props:
+      sql:
+        show: true
+
+    sharding:
+      tables:
+        traffic:
+          actual-data-nodes: ds0.traffic_$->{0..1}
+          table-strategy:
+            inline:
+              algorithm-expression: traffic_$->{ account_no % 2 }
+              sharding-column: account_no
+          key-generator:
+            type: SNOWFLAKE
+            column: id
+            props:
+              worker:
+                id: ${workId}
   redis:
     client-type: jedis
     host: 47.104.106.160

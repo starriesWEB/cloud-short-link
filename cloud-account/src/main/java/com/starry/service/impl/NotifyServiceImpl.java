@@ -8,7 +8,7 @@ import com.starry.service.NotifyService;
 import com.starry.utils.CheckUtil;
 import com.starry.utils.CommonUtil;
 import com.starry.utils.JsonData;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
  */
 @Slf4j
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class NotifyServiceImpl implements NotifyService {
 
     private final SmsComponent smsComponent;

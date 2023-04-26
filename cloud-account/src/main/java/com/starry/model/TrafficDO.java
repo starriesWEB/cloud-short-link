@@ -1,13 +1,12 @@
 package com.starry.model;
 
-import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.Data;
+
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import lombok.Data;
 
 /**
  * 
@@ -19,7 +18,6 @@ public class TrafficDO implements Serializable {
     /**
      * 
      */
-    @TableId(type = IdType.AUTO)
     private Long id;
 
     /**
