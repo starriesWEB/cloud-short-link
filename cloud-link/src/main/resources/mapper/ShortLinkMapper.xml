@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.starry.mapper.ShortLinkMapper">
+
+    <resultMap id="BaseResultMap" type="com.starry.model.ShortLinkDO">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="groupId" column="group_id" jdbcType="BIGINT"/>
+            <result property="title" column="title" jdbcType="VARCHAR"/>
+            <result property="originalUrl" column="original_url" jdbcType="VARCHAR"/>
+            <result property="domain" column="domain" jdbcType="VARCHAR"/>
+            <result property="code" column="code" jdbcType="VARCHAR"/>
+            <result property="sign" column="sign" jdbcType="VARCHAR"/>
+            <result property="expired" column="expired" jdbcType="TIMESTAMP"/>
+            <result property="accountNo" column="account_no" jdbcType="BIGINT"/>
+            <result property="gmtCreate" column="gmt_create" jdbcType="TIMESTAMP"/>
+            <result property="gmtModified" column="gmt_modified" jdbcType="TIMESTAMP"/>
+            <result property="del" column="del" jdbcType="OTHER"/>
+            <result property="state" column="state" jdbcType="VARCHAR"/>
+            <result property="linkType" column="link_type" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,group_id,title,
+        original_url,domain,code,
+        sign,expired,account_no,
+        gmt_create,gmt_modified,del,
+        state,link_type
+    </sql>
+</mapper>
