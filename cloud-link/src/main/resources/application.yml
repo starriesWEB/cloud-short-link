@@ -12,12 +12,36 @@ spring:
         password: nacos
   shardingsphere:
     datasource:
-      names: ds0
+      names: ds0,ds1,dsa
       ds0:
         connectionTimeoutMilliseconds: 30000
         driver-class-name: com.mysql.cj.jdbc.Driver
         idleTimeoutMilliseconds: 60000
-        jdbc-url: jdbc:mysql://47.104.106.160:3306/cloud_link?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+        jdbc-url: jdbc:mysql://47.104.106.160:3306/cloud_link_0?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+        maintenanceIntervalMilliseconds: 30000
+        maxLifetimeMilliseconds: 1800000
+        maxPoolSize: 50
+        minPoolSize: 50
+        username: root
+        password: shortLink
+        type: com.zaxxer.hikari.HikariDataSource
+      ds1:
+        connectionTimeoutMilliseconds: 30000
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        idleTimeoutMilliseconds: 60000
+        jdbc-url: jdbc:mysql://47.104.106.160:3306/cloud_link_1?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+        maintenanceIntervalMilliseconds: 30000
+        maxLifetimeMilliseconds: 1800000
+        maxPoolSize: 50
+        minPoolSize: 50
+        username: root
+        password: shortLink
+        type: com.zaxxer.hikari.HikariDataSource
+      dsa:
+        connectionTimeoutMilliseconds: 30000
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        idleTimeoutMilliseconds: 60000
+        jdbc-url: jdbc:mysql://47.104.106.160:3306/cloud_link_a?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
         maintenanceIntervalMilliseconds: 30000
         maxLifetimeMilliseconds: 1800000
         maxPoolSize: 50
@@ -28,7 +52,37 @@ spring:
     props:
       sql:
         show: true
-
+    sharding:
+      tables:
+        # 水平分库
+        link_group:
+          key-generator:
+            type: SNOWFLAKE
+            column: id
+            props:
+              worker:
+                id: ${workId}
+          database-strategy:
+            inline:
+              sharding-column: account_no
+              algorithm-expression: ds$->{account_no % 2}
+        # 水平分库分表
+        short_link:
+          key-generator:
+            type: SNOWFLAKE
+            column: id
+            props:
+              worker:
+                id: ${workId}
+          database-strategy:
+            standard:
+              sharding-column: code
+              precise-algorithm-class-name: com.starry.strategy.CustomDBPreciseShardingAlgorithm
+          actual-data-nodes: ds0.short_link,ds1.short_link,dsa.short_link
+          table-strategy:
+            standard:
+              sharding-column: code
+              precise-algorithm-class-name: com.starry.strategy.CustomTablePreciseShardingAlgorithm
 
 mybatis-plus:
   configuration:

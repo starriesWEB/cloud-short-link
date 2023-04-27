@@ -1,5 +1,7 @@
 package com.starry.component;
 
+import com.starry.strategy.ShardingDBConfig;
+import com.starry.strategy.ShardingTableConfig;
 import com.starry.utils.CommonUtil;
 import org.springframework.stereotype.Component;
 
@@ -18,7 +20,8 @@ public class ShortLinkComponent {
      */
     public String createShortLinkCode(String param){
         long murmurhash = CommonUtil.murmurHash32(param);
-        return encodeToBase62(murmurhash);
+        String code = encodeToBase62(murmurhash);
+        return ShardingDBConfig.getRandomDBPrefix() + code + ShardingTableConfig.getRandomTableSuffix();
     }
 
     /**

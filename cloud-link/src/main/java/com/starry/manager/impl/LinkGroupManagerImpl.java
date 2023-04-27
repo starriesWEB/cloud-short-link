@@ -37,6 +37,11 @@ public class LinkGroupManagerImpl implements LinkGroupManager {
 
     @Override
     public int updateById(LinkGroupDO linkGroupDO) {
-        return linkGroupMapper.updateById(linkGroupDO);
+        return linkGroupMapper.update(null,
+                Wrappers.lambdaUpdate(LinkGroupDO.class)
+                        .eq(LinkGroupDO::getId, linkGroupDO.getId())
+                        .eq(LinkGroupDO::getAccountNo, linkGroupDO.getAccountNo())
+                        .set(LinkGroupDO::getTitle, linkGroupDO.getTitle())
+        );
     }
 }
