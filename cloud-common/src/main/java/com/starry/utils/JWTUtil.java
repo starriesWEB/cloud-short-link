@@ -40,7 +40,7 @@ public class JWTUtil {
      * @param loginUser
      * @return
      */
-    public static String geneJsonWebTokne(LoginUser loginUser) {
+    public static String genJsonWebTokne(LoginUser loginUser) {
 
         if (loginUser == null) {
             throw new NullPointerException("对象为空");

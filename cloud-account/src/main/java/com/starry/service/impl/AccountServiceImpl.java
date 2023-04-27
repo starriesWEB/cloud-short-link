@@ -14,6 +14,7 @@ import com.starry.service.AccountService;
 import com.starry.service.NotifyService;
 import com.starry.utils.CommonUtil;
 import com.starry.utils.IDUtil;
+import com.starry.utils.JWTUtil;
 import com.starry.utils.JsonData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -52,8 +53,6 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, AccountDO>
         //认证级别
         accountDO.setAuth(AuthTypeEnum.DEFAULT.name());
 
-
-        //生成唯一的账号  TODO
         accountDO.setAccountNo(Long.valueOf(IDUtil.genSnowFlakeID().toString()));
 
 
@@ -80,8 +79,7 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, AccountDO>
             if (md5Crypt.equalsIgnoreCase(accountDO.getPwd())) {
                 LoginUser loginUser = LoginUser.builder().build();
                 BeanUtils.copyProperties(accountDO, loginUser);
-                //生成TOKEN TODO
-                return JsonData.buildSuccess("");
+                return JsonData.buildSuccess(JWTUtil.genJsonWebTokne(loginUser));
             } else {
                 return JsonData.buildResult(BizCodeEnum.ACCOUNT_PWD_ERROR);
             }

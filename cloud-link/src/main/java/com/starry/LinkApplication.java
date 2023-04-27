@@ -10,7 +10,6 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @EnableAsync
 @MapperScan("com.starry.mapper")
-
 @EnableTransactionManagement
 @EnableFeignClients
 @EnableDiscoveryClient
