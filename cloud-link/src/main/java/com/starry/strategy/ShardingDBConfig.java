@@ -9,14 +9,14 @@ public class ShardingDBConfig {
     /**
      * 存储数据库位置编号
      */
-    private static final List<String> dbPrefixList = new ArrayList<>();
+    private static final List<String> DB_PREFIX_LIST = new ArrayList<>();
 
 
     //配置启用那些库的前缀
     static {
-        dbPrefixList.add("0");
-        dbPrefixList.add("1");
-        dbPrefixList.add("a");
+        DB_PREFIX_LIST.add("0");
+        DB_PREFIX_LIST.add("1");
+        DB_PREFIX_LIST.add("a");
     }
 
 
@@ -25,7 +25,7 @@ public class ShardingDBConfig {
      * @return
      */
     public static String getRandomDBPrefix(){
-        return dbPrefixList.get(ThreadLocalRandom.current().nextInt(dbPrefixList.size()));
+        return DB_PREFIX_LIST.get(ThreadLocalRandom.current().nextInt(DB_PREFIX_LIST.size()));
     }
 
 }

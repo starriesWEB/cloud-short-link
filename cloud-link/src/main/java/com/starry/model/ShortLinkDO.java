@@ -1,12 +1,13 @@
 package com.starry.model;
 
-import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.Data;
+
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import lombok.Data;
+import java.util.Date;
 
 /**
  * 
@@ -54,7 +55,7 @@ public class ShortLinkDO implements Serializable {
     /**
      * 过期时间，长久就是-1
      */
-    private LocalDateTime expired;
+    private Date expired;
 
     /**
      * 账号唯一编号

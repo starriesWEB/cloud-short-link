@@ -9,13 +9,13 @@ public class ShardingTableConfig {
     /**
      * 存储数据表位置编号
      */
-    private static final List<String> tableSuffixList = new ArrayList<>();
+    private static final List<String> TABLE_SUFFIX_LIST = new ArrayList<>();
 
 
     //配置启用那些表的后缀
     static {
-        tableSuffixList.add("0");
-        tableSuffixList.add("a");
+        TABLE_SUFFIX_LIST.add("0");
+        TABLE_SUFFIX_LIST.add("a");
     }
 
 
@@ -24,7 +24,7 @@ public class ShardingTableConfig {
      * @return
      */
     public static String getRandomTableSuffix(){
-        return tableSuffixList.get(ThreadLocalRandom.current().nextInt(tableSuffixList.size()));
+        return TABLE_SUFFIX_LIST.get(ThreadLocalRandom.current().nextInt(TABLE_SUFFIX_LIST.size()));
     }
 
 
