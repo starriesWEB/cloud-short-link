@@ -3,7 +3,10 @@ package com.starry.model;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -15,6 +18,9 @@ import java.util.Date;
  */
 @TableName(value ="group_code_mapping")
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class GroupCodeMappingDO implements Serializable {
     /**
      * 

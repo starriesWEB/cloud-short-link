@@ -181,11 +181,54 @@ public class CommonUtil {
 
     /**
      * murmurhash算法
+     *
      * @param param
      * @return
      */
-    public static long murmurHash32(String param){
+    public static long murmurHash32(String param) {
         return Hashing.murmur3_32().hashUnencodedChars(param).padToLong();
+    }
+
+    /**
+     * URL增加前缀
+     *
+     * @param url
+     * @return
+     */
+    public static String addUrlPrefix(String url) {
+        return IDUtil.genSnowFlakeID() + "&" + url;
+    }
+
+    /**
+     * 移除URL前缀
+     *
+     * @param url
+     * @return
+     */
+    public static String removeUrlPrefix(String url) {
+        return url.substring(url.indexOf("&") + 1);
+    }
+
+
+    /**
+     * 如果短链码重复，则调用这个方法
+     * url前缀的编号递增1
+     * 如果还是用雪花算法，则容易C端和B端不一致，所以采用编号递增1的方式
+     * <p>
+     * 123132432212&https://baidu.com
+     *
+     * @param url
+     * @return
+     */
+    public static String addUrlPrefixVersion(String url) {
+        //随机id
+        int index = url.indexOf("&");
+        String version = url.substring(0, index);
+        //原始地址
+        String originalUrl = url.substring(index + 1);
+        //新id
+        Long newVersion = Long.parseLong(version) + 1;
+        return newVersion + "&" + originalUrl;
     }
 
 }

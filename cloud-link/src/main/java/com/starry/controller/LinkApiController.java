@@ -37,7 +37,6 @@ public class LinkApiController {
      * <p>
      * 所以选择302虽然会增加服务器压力，但是有很多数据可以获取进行分析
      *
-     * @param linkCode
      * @return
      */
     @GetMapping(path = "/{shortLinkCode}")
@@ -51,7 +50,7 @@ public class LinkApiController {
                 ShortLinkVO shortLinkVO = shortLinkService.parseShortLinkCode(shortLinkCode);
                 //判断是否过期和可用
                 if (isVisitable(shortLinkVO)) {
-                    response.setHeader(HttpHeaders.LOCATION, shortLinkVO.getOriginalUrl());
+                    response.setHeader(HttpHeaders.LOCATION, CommonUtil.removeUrlPrefix(shortLinkVO.getOriginalUrl()));
                     //302跳转
                     response.setStatus(HttpStatus.FOUND.value());
                 } else {
@@ -75,7 +74,7 @@ public class LinkApiController {
             if (ShortLinkStateEnum.ACTIVE.name().equalsIgnoreCase(shortLinkVO.getState())) {
                 return true;
             }
-        } else if ((shortLinkVO != null && shortLinkVO.getExpired().getTime() == -1)) {
+        } else if ((shortLinkVO != null && shortLinkVO.getExpired().getTime() <= 0)) {
             if (ShortLinkStateEnum.ACTIVE.name().equalsIgnoreCase(shortLinkVO.getState())) {
                 return true;
             }

@@ -2,7 +2,6 @@ package com.starry.strategy;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
 
 public class ShardingDBConfig {
 
@@ -24,8 +23,8 @@ public class ShardingDBConfig {
      * 获取随机的前缀
      * @return
      */
-    public static String getRandomDBPrefix(){
-        return DB_PREFIX_LIST.get(ThreadLocalRandom.current().nextInt(DB_PREFIX_LIST.size()));
+    public static String getRandomDBPrefix(String code){
+        return DB_PREFIX_LIST.get(Math.abs(code.hashCode()) % DB_PREFIX_LIST.size());
     }
 
 }

@@ -23,8 +23,8 @@ public class ShardingTableConfig {
      * 获取随机的后缀
      * @return
      */
-    public static String getRandomTableSuffix(){
-        return TABLE_SUFFIX_LIST.get(ThreadLocalRandom.current().nextInt(TABLE_SUFFIX_LIST.size()));
+    public static String getRandomTableSuffix(String code){
+        return TABLE_SUFFIX_LIST.get(Math.abs(code.hashCode()) % TABLE_SUFFIX_LIST.size());
     }
 
 

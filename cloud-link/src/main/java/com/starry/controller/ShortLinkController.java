@@ -18,9 +18,6 @@ public class ShortLinkController {
 
     @PostMapping("add")
     public JsonData createShortLink(@RequestBody ShortLinkAddRequest request){
-
-        JsonData jsonData = shortLinkService.createShortLink(request);
-
-        return jsonData;
+        return shortLinkService.createShortLink(request);
     }
 }

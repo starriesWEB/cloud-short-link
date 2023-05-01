@@ -10,6 +10,17 @@ spring:
         server-addr: 47.104.106.160:8848
         username: nacos
         password: nacos
+  redis:
+    client-type: jedis
+    host: 47.104.106.160
+    password: shortLink
+    port: 6379
+    jedis:
+      pool:
+        max-active: 100
+        max-idle: 100
+        min-idle: 100
+        max-wait: 60000
   shardingsphere:
     datasource:
       names: ds0,ds1,dsa
@@ -54,26 +65,14 @@ spring:
         show: true
     sharding:
       tables:
-        # 水平分库
+        # 水平分库，行表达式
         link_group:
-          key-generator:
-            type: SNOWFLAKE
-            column: id
-            props:
-              worker:
-                id: ${workId}
           database-strategy:
             inline:
               sharding-column: account_no
               algorithm-expression: ds$->{account_no % 2}
-        # 水平分库分表
+        # 水平分库分表，自定义路由策略
         short_link:
-          key-generator:
-            type: SNOWFLAKE
-            column: id
-            props:
-              worker:
-                id: ${workId}
           database-strategy:
             standard:
               sharding-column: code
@@ -83,6 +82,18 @@ spring:
             standard:
               sharding-column: code
               precise-algorithm-class-name: com.starry.strategy.CustomTablePreciseShardingAlgorithm
+        # 水平分库分表，行表达式
+        group_code_mapping:
+          database-strategy:
+            inline:
+              sharding-column: account_no
+              algorithm-expression: ds$->{account_no % 2}
+          actual-data-nodes: ds$->{0..1}.group_code_mapping_$->{0..1}
+          table-strategy:
+            inline:
+              sharding-column: group_id
+              algorithm-expression: group_code_mapping_$->{group_id % 2}
+
       default-data-source-name: ds0
       default-key-generator:
         type: SNOWFLAKE
