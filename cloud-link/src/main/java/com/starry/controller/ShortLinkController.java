@@ -1,7 +1,9 @@
 package com.starry.controller;
 
 import com.starry.controller.request.ShortLinkAddRequest;
+import com.starry.controller.request.ShortLinkDelRequest;
 import com.starry.controller.request.ShortLinkPageRequest;
+import com.starry.controller.request.ShortLinkUpdateRequest;
 import com.starry.service.ShortLinkService;
 import com.starry.utils.JsonData;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +34,25 @@ public class ShortLinkController {
     public JsonData pageByGroupId(@RequestBody ShortLinkPageRequest request){
         Map<String,Object> result = shortLinkService.pageByGroupId(request);
         return JsonData.buildSuccess(result);
+    }
 
+    /**
+     * 删除短链
+     * @param request
+     * @return
+     */
+    @PostMapping("del")
+    public JsonData del(@RequestBody ShortLinkDelRequest request){
+        return shortLinkService.del(request);
+    }
+
+    /**
+     * 更新短链
+     * @param request
+     * @return
+     */
+    @PostMapping("update")
+    public JsonData update(@RequestBody ShortLinkUpdateRequest request){
+        return shortLinkService.update(request);
     }
 }

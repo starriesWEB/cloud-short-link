@@ -40,11 +40,11 @@ public class GroupCodeMappingManagerImpl implements GroupCodeMappingManager {
     }
 
     @Override
-    public int del(String shortLinkCode, Long accountNo, Long groupId) {
+    public int del(GroupCodeMappingDO groupCodeMappingDO) {
         return groupCodeMappingMapper.update(null, Wrappers.lambdaUpdate(GroupCodeMappingDO.class)
-                .eq(GroupCodeMappingDO::getCode, shortLinkCode)
-                .eq(GroupCodeMappingDO::getAccountNo, accountNo)
-                .eq(GroupCodeMappingDO::getGroupId, groupId)
+                .eq(GroupCodeMappingDO::getCode, groupCodeMappingDO.getCode())
+                .eq(GroupCodeMappingDO::getAccountNo, groupCodeMappingDO.getAccountNo())
+                .eq(GroupCodeMappingDO::getGroupId, groupCodeMappingDO.getGroupId())
                 .set(GroupCodeMappingDO::getDel, 1));
     }
 
@@ -89,6 +89,19 @@ public class GroupCodeMappingManagerImpl implements GroupCodeMappingManager {
                 .eq(GroupCodeMappingDO::getAccountNo, accountNo)
                 .eq(GroupCodeMappingDO::getGroupId, groupId)
                 .eq(GroupCodeMappingDO::getDel, 0));
+    }
+
+    @Override
+    public int update(GroupCodeMappingDO groupCodeMappingDO) {
+        return groupCodeMappingMapper.update(null,
+                Wrappers.lambdaUpdate(GroupCodeMappingDO.class)
+                        .eq(GroupCodeMappingDO::getId, groupCodeMappingDO.getId())
+                        .eq(GroupCodeMappingDO::getAccountNo, groupCodeMappingDO.getAccountNo())
+                        .eq(GroupCodeMappingDO::getGroupId, groupCodeMappingDO.getGroupId())
+                        .eq(GroupCodeMappingDO::getDel, 0)
+                        .set(GroupCodeMappingDO::getTitle, groupCodeMappingDO.getTitle())
+                        .set(GroupCodeMappingDO::getDomain, groupCodeMappingDO.getDomain())
+        );
     }
 
 

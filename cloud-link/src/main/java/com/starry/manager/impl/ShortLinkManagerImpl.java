@@ -30,13 +30,23 @@ public class ShortLinkManagerImpl implements ShortLinkManager {
     }
 
     @Override
-    public int del(String shortLinkCode, Long accountNo) {
-        ShortLinkDO shortLinkDO = new ShortLinkDO();
-        shortLinkDO.setDel(1);
-        return shortLinkMapper.update(shortLinkDO,
-                Wrappers.lambdaQuery(ShortLinkDO.class)
-                        .eq(ShortLinkDO::getCode, shortLinkCode)
-                        .eq(ShortLinkDO::getAccountNo, accountNo)
+    public int del(ShortLinkDO shortLinkDO) {
+        return shortLinkMapper.update(null,
+                Wrappers.lambdaUpdate(ShortLinkDO.class)
+                        .eq(ShortLinkDO::getCode, shortLinkDO.getCode())
+                        .eq(ShortLinkDO::getAccountNo, shortLinkDO.getAccountNo())
+                        .set(ShortLinkDO::getDel, 1));
+    }
+
+    @Override
+    public int update(ShortLinkDO shortLinkDO) {
+        return shortLinkMapper.update(null,
+                Wrappers.lambdaUpdate(ShortLinkDO.class)
+                .eq(ShortLinkDO::getCode, shortLinkDO.getCode())
+                .eq(ShortLinkDO::getAccountNo, shortLinkDO.getAccountNo())
+                .eq(ShortLinkDO::getDel, 0)
+                .set(ShortLinkDO::getTitle, shortLinkDO.getTitle())
+                .set(ShortLinkDO::getDomain, shortLinkDO.getDomain())
         );
     }
 }
