@@ -25,7 +25,13 @@ public class GroupCodeMappingManagerImpl implements GroupCodeMappingManager {
 
     @Override
     public GroupCodeMappingDO findByGroupIdAndMappingId(Long mappingId, Long accountNo, Long groupId) {
-        return groupCodeMappingMapper.selectOne(Wrappers.lambdaQuery(GroupCodeMappingDO.class).eq(GroupCodeMappingDO::getGroupId, mappingId).eq(GroupCodeMappingDO::getAccountNo, accountNo).eq(GroupCodeMappingDO::getGroupId, groupId));
+        return groupCodeMappingMapper.selectOne(
+                Wrappers.lambdaQuery(GroupCodeMappingDO.class)
+                        .eq(GroupCodeMappingDO::getGroupId, mappingId)
+                        .eq(GroupCodeMappingDO::getAccountNo, accountNo)
+                        .eq(GroupCodeMappingDO::getGroupId, groupId)
+                        .eq(GroupCodeMappingDO::getDel, 0)
+        );
     }
 
     @Override
@@ -48,9 +54,12 @@ public class GroupCodeMappingManagerImpl implements GroupCodeMappingManager {
         Page<GroupCodeMappingDO> pageInfo = new Page<>(page, size);
 
 
-        Page<GroupCodeMappingDO> groupCodeMappingDOPage = groupCodeMappingMapper.selectPage(pageInfo, Wrappers.lambdaUpdate(GroupCodeMappingDO.class)
-                .eq(GroupCodeMappingDO::getAccountNo, accountNo)
-                .eq(GroupCodeMappingDO::getGroupId, groupId));
+        Page<GroupCodeMappingDO> groupCodeMappingDOPage = groupCodeMappingMapper.selectPage(pageInfo,
+                Wrappers.lambdaUpdate(GroupCodeMappingDO.class)
+                        .eq(GroupCodeMappingDO::getAccountNo, accountNo)
+                        .eq(GroupCodeMappingDO::getGroupId, groupId)
+                        .eq(GroupCodeMappingDO::getDel, 0)
+        );
 
         Map<String, Object> pageMap = new HashMap<>(3);
 
@@ -68,7 +77,9 @@ public class GroupCodeMappingManagerImpl implements GroupCodeMappingManager {
                 .eq(GroupCodeMappingDO::getCode, shortLinkCode)
                 .eq(GroupCodeMappingDO::getAccountNo, accountNo)
                 .eq(GroupCodeMappingDO::getGroupId, groupId)
-                .set(GroupCodeMappingDO::getState, shortLinkStateEnum.name()));
+                .eq(GroupCodeMappingDO::getDel, 0)
+                .set(GroupCodeMappingDO::getState, shortLinkStateEnum.name())
+        );
     }
 
     @Override

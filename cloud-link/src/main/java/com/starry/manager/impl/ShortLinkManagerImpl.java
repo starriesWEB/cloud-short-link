@@ -22,7 +22,11 @@ public class ShortLinkManagerImpl implements ShortLinkManager {
 
     @Override
     public ShortLinkDO findByShortLinCode(String shortLinkCode) {
-        return shortLinkMapper.selectOne(Wrappers.lambdaQuery(ShortLinkDO.class).eq(ShortLinkDO::getCode, shortLinkCode));
+        return shortLinkMapper.selectOne(
+                Wrappers.lambdaQuery(ShortLinkDO.class)
+                        .eq(ShortLinkDO::getCode, shortLinkCode)
+                        .eq(ShortLinkDO::getDel, 0)
+        );
     }
 
     @Override

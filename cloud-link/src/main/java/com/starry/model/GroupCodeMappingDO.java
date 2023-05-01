@@ -81,7 +81,7 @@ public class GroupCodeMappingDO implements Serializable {
     /**
      * 0是默认，1是删除
      */
-    private Object del;
+    private Integer del;
 
     /**
      * 状态，lock是锁定不可用，active是可用
