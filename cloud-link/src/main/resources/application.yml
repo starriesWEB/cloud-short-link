@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: cloud-link
+    name: cloud-link-service
   cloud:
     nacos:
       discovery:

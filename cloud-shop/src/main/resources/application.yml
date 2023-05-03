@@ -1,0 +1,56 @@
+server:
+  port: 8005
+
+spring:
+  application:
+    name: cloud-link-service
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 47.104.106.160:8848
+        username: nacos
+        password: nacos
+  redis:
+    client-type: jedis
+    host: 47.104.106.160
+    password: shortLink
+    port: 6379
+    jedis:
+      pool:
+        max-active: 100
+        max-idle: 100
+        min-idle: 100
+        max-wait: 60000
+  shardingsphere:
+    datasource:
+      names: ds0
+      ds0:
+        connectionTimeoutMilliseconds: 30000
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        idleTimeoutMilliseconds: 60000
+        jdbc-url: jdbc:mysql://47.104.106.160:3306/cloud_shop?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&autoReconnect=true&failOverReadOnly=false
+        maintenanceIntervalMilliseconds: 30000
+        maxLifetimeMilliseconds: 1800000
+        maxPoolSize: 50
+        minPoolSize: 50
+        username: root
+        password: shortLink
+        type: com.zaxxer.hikari.HikariDataSource
+    props:
+      sql:
+        show: true
+    sharding:
+      default-data-source-name: ds0
+      default-key-generator:
+        type: SNOWFLAKE
+        column: id
+        props:
+          worker:
+            id: ${workId}
+
+
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  mapper-locations: classpath*:/mapper/**/*.xml
+
