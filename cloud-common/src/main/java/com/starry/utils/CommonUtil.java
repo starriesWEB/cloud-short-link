@@ -2,6 +2,7 @@ package com.starry.utils;
 
 import com.google.common.hash.Hashing;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -174,6 +175,26 @@ public class CommonUtil {
 
         } catch (IOException e) {
             log.warn("响应json数据给前端异常:{}", e);
+        }
+
+
+    }
+
+    /**
+     * 响应HTML数据给前端
+     *
+     * @param response
+     * @param obj
+     */
+    public static void sendHtmlMessage(HttpServletResponse response, JsonData jsonData) {
+
+        response.setContentType("text/html; charset=utf-8");
+
+        try (PrintWriter writer = response.getWriter()) {
+            writer.write(jsonData.getData().toString());
+            writer.flush();
+        } catch (IOException e) {
+            log.warn("响应html数据给前端异常:{}", ExceptionUtils.getStackTrace(e));
         }
 
 
