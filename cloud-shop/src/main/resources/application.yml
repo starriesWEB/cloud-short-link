@@ -47,6 +47,14 @@ spring:
         props:
           worker:
             id: ${workId}
+      tables:
+        # 水平分表
+        product_order:
+          actual-data-nodes: ds0.product_order_$->{0..1}
+          table-strategy:
+            inline:
+              sharding-column: account_no
+              algorithm-expression: product_order_$->{account_no % 2}
 
 
 mybatis-plus:
