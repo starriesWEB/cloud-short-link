@@ -3,6 +3,7 @@ package com.starry.service.impl;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.starry.constant.TimeConstant;
 import com.starry.controller.request.ConfirmOrderRequest;
+import com.starry.controller.request.ProductOrderPageRequest;
 import com.starry.enums.BillTypeEnum;
 import com.starry.enums.BizCodeEnum;
 import com.starry.enums.ProductOrderPayTypeEnum;
@@ -42,9 +43,9 @@ public class ProductOrderServiceImpl extends ServiceImpl<ProductOrderMapper, Pro
     private final ProductManager productManager;
 
     @Override
-    public Map<String, Object> page(int page, int size, String state) {
+    public Map<String, Object> page(ProductOrderPageRequest orderPageRequest) {
         Long accountNo = LoginInterceptor.threadLocal.get().getAccountNo();
-        return productOrderManager.page(page, size, accountNo, state);
+        return productOrderManager.page(orderPageRequest.getPage(), orderPageRequest.getSize(), accountNo, orderPageRequest.getState());
     }
 
     @Override
@@ -60,7 +61,7 @@ public class ProductOrderServiceImpl extends ServiceImpl<ProductOrderMapper, Pro
 
 
     /**
-     * *  重防􏰀提交（TODO）
+     * *  重防提交（TODO）
      * *  获取最新的流量包价格
      * *  订单验价
      *    *  如果有优惠券或者其他抵扣

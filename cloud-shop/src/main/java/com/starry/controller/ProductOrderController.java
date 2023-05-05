@@ -1,19 +1,25 @@
 package com.starry.controller;
 
+import com.starry.annotation.RepeatSubmit;
+import com.starry.constant.RedisKey;
 import com.starry.controller.request.ConfirmOrderRequest;
+import com.starry.controller.request.ProductOrderPageRequest;
 import com.starry.enums.BizCodeEnum;
 import com.starry.enums.ClientTypeEnum;
 import com.starry.enums.ProductOrderPayTypeEnum;
+import com.starry.interceptor.LoginInterceptor;
 import com.starry.service.ProductOrderService;
 import com.starry.utils.CommonUtil;
 import com.starry.utils.JsonData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("/api/order/v1")
@@ -23,20 +29,34 @@ public class ProductOrderController {
 
 
     private final ProductOrderService productOrderService;
+    private final StringRedisTemplate redisTemplate;
 
+
+    /**
+     * 下单前获取令牌用于防重提交
+     *
+     * @return
+     */
+    @GetMapping("token")
+    public JsonData getOrderToken() {
+        long accountNo = LoginInterceptor.threadLocal.get().getAccountNo();
+        String token = CommonUtil.getStringNumRandom(32);
+        String key = String.format(RedisKey.SUBMIT_ORDER_TOKEN_KEY, accountNo, token);
+        //令牌有效时间是30分钟
+        redisTemplate.opsForValue().set(key, String.valueOf(Thread.currentThread().getId()), 30, TimeUnit.MINUTES);
+        return JsonData.buildSuccess(token);
+    }
 
     /**
      * 分页接口
      *
      * @return
      */
-    @GetMapping("page")
+    @PostMapping("page")
     public JsonData page(
-            @RequestParam(value = "page", defaultValue = "1") int page,
-            @RequestParam(value = "size", defaultValue = "10") int size,
-            @RequestParam(value = "state", required = false) String state
+            @RequestBody ProductOrderPageRequest orderPageRequest
     ) {
-        Map<String, Object> pageResult = productOrderService.page(page, size, state);
+        Map<String, Object> pageResult = productOrderService.page(orderPageRequest);
         return JsonData.buildSuccess(pageResult);
     }
 
@@ -58,10 +78,12 @@ public class ProductOrderController {
 
     /**
      * 下单接口
+     *
      * @param orderRequest
      * @param response
      */
     @PostMapping("confirm")
+    @RepeatSubmit(limitType = RepeatSubmit.Type.TOKEN)
     public void confirmOrder(@RequestBody ConfirmOrderRequest orderRequest, HttpServletResponse response) {
         JsonData jsonData = productOrderService.confirmOrder(orderRequest);
         if (jsonData.getCode() == 0) {
@@ -77,7 +99,7 @@ public class ProductOrderController {
                 } else if (client.equalsIgnoreCase(ClientTypeEnum.H5.name())) {
                 }
 
-            } else if (payType.equalsIgnoreCase(ProductOrderPayTypeEnum.WECHAT_APY.name())) {
+            } else if (payType.equalsIgnoreCase(ProductOrderPayTypeEnum.WECHAT_PAY.name())) {
                 //微信支付
                 CommonUtil.sendJsonMessage(response, jsonData);
             }
