@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.extern.slf4j.Slf4j;
 
 import java.text.SimpleDateFormat;
@@ -20,7 +21,7 @@ public class JsonUtil {
     private static final ObjectMapper mapper = new ObjectMapper();
 
     static {
-
+        mapper.registerModule(new JavaTimeModule());
         //设置可用单引号
         mapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
 

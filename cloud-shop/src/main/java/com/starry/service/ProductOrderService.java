@@ -3,6 +3,7 @@ package com.starry.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.starry.controller.request.ConfirmOrderRequest;
 import com.starry.controller.request.ProductOrderPageRequest;
+import com.starry.model.EventMessage;
 import com.starry.model.ProductOrderDO;
 import com.starry.utils.JsonData;
 
@@ -18,5 +19,7 @@ public interface ProductOrderService extends IService<ProductOrderDO> {
     String queryProductOrderState(String outTradeNo);
 
     JsonData confirmOrder(ConfirmOrderRequest orderRequest);
+
+    boolean closeProductOrder(EventMessage eventMessage);
 
 }

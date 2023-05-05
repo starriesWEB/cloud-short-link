@@ -21,6 +21,19 @@ spring:
         max-idle: 100
         min-idle: 100
         max-wait: 60000
+  rabbitmq:
+    host: 47.104.106.160
+    port: 5672
+    virtual-host: dev
+    username: admin
+    password: shortLink
+    listener:
+      simple:
+        acknowledge-mode: auto
+        retry:
+          enabled: true
+          max-attempts: 4
+          initial-interval: 5000
   shardingsphere:
     datasource:
       names: ds0
