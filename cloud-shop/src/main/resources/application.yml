@@ -75,3 +75,18 @@ mybatis-plus:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
   mapper-locations: classpath*:/mapper/**/*.xml
 
+pay:
+  wechat:
+    mch-id: 1558950191
+    wx-pay-appid: wx74862e0dfcf69954
+    mch-serial-no: 34345964330B66427E0D3D28826C4993C77E631F
+    api-v3-key: UDuLFDcmy5Eb6o0nTNZdu6ek4DDh4K8B
+    private-key-path: classpath:/cert/apiclient_key.pem
+    success-return-url: https://www.baidu.com
+    callback-url: https://2l818y5997.zicp.fun/api/callback/order/v1/wechat
+
+
+
+
+
+

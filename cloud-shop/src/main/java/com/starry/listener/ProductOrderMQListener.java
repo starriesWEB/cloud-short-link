@@ -27,18 +27,12 @@ public class ProductOrderMQListener {
     @RabbitHandler
     public void productOrderHandler(EventMessage eventMessage, Message message, Channel channel){
         log.info("监听到消息ProductOrderMQListener messsage消息内容:{}",message);
-
         try{
-
-            //关闭订单
-            productOrderService.closeProductOrder(eventMessage);
-
-
+            productOrderService.handleProductOrderMessage(eventMessage);
         }catch (Exception e){
             log.error("消费者失败:{}",eventMessage);
             throw new BizException(BizCodeEnum.MQ_CONSUME_EXCEPTION);
         }
-
         log.info("消费成功:{}",eventMessage);
 
 

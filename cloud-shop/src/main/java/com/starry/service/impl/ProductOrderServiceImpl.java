@@ -1,6 +1,7 @@
 package com.starry.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.starry.component.PayFactory;
 import com.starry.config.RabbitMQConfig;
 import com.starry.constant.TimeConstant;
 import com.starry.controller.request.ConfirmOrderRequest;
@@ -24,12 +25,16 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  *
@@ -44,6 +49,8 @@ public class ProductOrderServiceImpl extends ServiceImpl<ProductOrderMapper, Pro
     private final ProductManager productManager;
     private final RabbitTemplate rabbitTemplate;
     private final RabbitMQConfig rabbitMQConfig;
+    private final StringRedisTemplate redisTemplate;
+    private final PayFactory payFactory;
 
     @Override
     public Map<String, Object> page(ProductOrderPageRequest orderPageRequest) {
@@ -86,7 +93,7 @@ public class ProductOrderServiceImpl extends ServiceImpl<ProductOrderMapper, Pro
         //验证价格
         this.checkPrice(productDO,orderRequest);
         //创建订单
-        ProductOrderDO productOrderDO = this.saveProductOrder(orderRequest,loginUser,orderOutTradeNo,productDO);
+        this.saveProductOrder(orderRequest,loginUser,orderOutTradeNo,productDO);
         //创建支付对象
         PayInfoVO payInfoVO = PayInfoVO.builder()
                 .accountNo(loginUser.getAccountNo())
@@ -106,7 +113,15 @@ public class ProductOrderServiceImpl extends ServiceImpl<ProductOrderMapper, Pro
                 .build();
         rabbitTemplate.convertAndSend(rabbitMQConfig.getOrderEventExchange(),rabbitMQConfig.getOrderCloseDelayRoutingKey(),eventMessage);
 
-        //调用支付信息 TODO
+        //调用支付信息
+        String codeUrl = payFactory.pay(payInfoVO);
+        if (StringUtils.isNotBlank(codeUrl)) {
+            Map<String, String> resultMap = new HashMap<>(2);
+            resultMap.put("code_url", codeUrl);
+            resultMap.put("out_trade_no", payInfoVO.getOutTradeNo());
+            return JsonData.buildSuccess(resultMap);
+        }
+
         return JsonData.buildSuccess();
     }
 
@@ -165,6 +180,78 @@ public class ProductOrderServiceImpl extends ServiceImpl<ProductOrderMapper, Pro
         }
 
         return true;
+    }
+
+
+    /**
+     * 处理微信回调通知
+     *
+     * @param paramsMap
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
+    public JsonData processOrderCallbackMsg(ProductOrderPayTypeEnum payType, Map<String, String> paramsMap) {
+        //获取商户订单号
+        String outTradeNo = paramsMap.get("out_trade_no");
+        //交易状态
+        String tradeState = paramsMap.get("trade_state");
+        Long accountNo = Long.valueOf(paramsMap.get("account_no"));
+        ProductOrderDO productOrderDO = productOrderManager.findByOutTradeNoAndAccountNo(outTradeNo, accountNo);
+
+        Map<String, Object> content = new HashMap<>(4);
+        content.put("outTradeNo", outTradeNo);
+        content.put("buyNum", productOrderDO.getBuyNum());
+        content.put("accountNo", accountNo);
+        content.put("product", productOrderDO.getProductSnapshot());
+
+        //构建消息
+        EventMessage eventMessage = EventMessage.builder()
+                .bizId(outTradeNo)
+                .accountNo(accountNo)
+                .messageId(outTradeNo)
+                .content(JsonUtil.obj2Json(content))
+                .eventMessageType(EventMessageType.PRODUCT_ORDER_PAY.name())
+                .build();
+
+        if (payType.name().equalsIgnoreCase(ProductOrderPayTypeEnum.ALI_PAY.name())) {
+            //支付宝支付 TODO
+        } else if (payType.name().equalsIgnoreCase(ProductOrderPayTypeEnum.WECHAT_PAY.name())) {
+            if ("SUCCESS".equalsIgnoreCase(tradeState)) {
+                // 幂等处理，微信多次回调
+                Boolean flag = redisTemplate.opsForValue().setIfAbsent(outTradeNo, "OK", 3, TimeUnit.DAYS);
+                if (Boolean.TRUE.equals(flag)) {
+                    rabbitTemplate.convertAndSend(rabbitMQConfig.getOrderEventExchange(),
+                            rabbitMQConfig.getOrderUpdateTrafficRoutingKey(), eventMessage);
+
+                    return JsonData.buildSuccess();
+                }
+            }
+        }
+        return JsonData.buildResult(BizCodeEnum.PAY_ORDER_CALLBACK_NOT_SUCCESS);
+    }
+
+    /**
+     * 处理订单相关消息
+     */
+    @Override
+    public void handleProductOrderMessage(EventMessage eventMessage) {
+        String messageType = eventMessage.getEventMessageType();
+        try{
+            if(EventMessageType.PRODUCT_ORDER_NEW.name().equalsIgnoreCase(messageType)){
+                //关闭订单
+                this.closeProductOrder(eventMessage);
+            } else if(EventMessageType.PRODUCT_ORDER_PAY.name().equalsIgnoreCase(messageType)){
+                //订单已经支付，更新订单状态
+                String outTradeNo = eventMessage.getBizId();
+                Long accountNo = eventMessage.getAccountNo();
+                int rows = productOrderManager.updateOrderPayState(outTradeNo,accountNo,
+                        ProductOrderStateEnum.PAY.name(),ProductOrderStateEnum.NEW.name());
+                log.info("订单更新成功:rows={},eventMessage={}",rows,eventMessage);
+            }
+        }catch (Exception e){
+            log.error("订单消费者消费失败:{}",eventMessage);
+            throw new BizException(BizCodeEnum.MQ_CONSUME_EXCEPTION);
+        }
     }
 
     private ProductOrderDO saveProductOrder(ConfirmOrderRequest orderRequest, LoginUser loginUser, String orderOutTradeNo, ProductDO productDO) {
