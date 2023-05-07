@@ -2,11 +2,14 @@ package com.starry.model;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Date;
 
 /**
  * 
@@ -14,6 +17,9 @@ import java.time.LocalDateTime;
  */
 @TableName(value ="traffic")
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class TrafficDO implements Serializable {
     /**
      * 
@@ -53,7 +59,7 @@ public class TrafficDO implements Serializable {
     /**
      * 过期日期
      */
-    private LocalDate expiredDate;
+    private Date expiredDate;
 
     /**
      * 插件类型

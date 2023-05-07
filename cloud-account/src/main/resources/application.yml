@@ -10,6 +10,19 @@ spring:
         server-addr: 47.104.106.160:8848
         username: nacos
         password: nacos
+  rabbitmq:
+    host: 47.104.106.160
+    port: 5672
+    virtual-host: dev
+    username: admin
+    password: shortLink
+    listener:
+      simple:
+        acknowledge-mode: auto
+        retry:
+          enabled: true
+          max-attempts: 4
+          initial-interval: 5000
   shardingsphere:
     datasource:
       names: ds0
@@ -25,6 +38,10 @@ spring:
         username: root
         password: shortLink
         type: com.zaxxer.hikari.HikariDataSource
+        hikari:
+          max-lifetime: 1800000
+          minimum-idle: 5
+          maximum-pool-size: 50
     props:
       sql:
         show: true
@@ -48,12 +65,13 @@ spring:
     host: 47.104.106.160
     password: shortLink
     port: 6379
+    timeout: 5000
     jedis:
       pool:
         max-active: 100
         max-idle: 100
         min-idle: 100
-        max-wait: 60000
+        max-wait: 6000
 
 mybatis-plus:
   configuration:
