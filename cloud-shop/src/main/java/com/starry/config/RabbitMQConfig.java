@@ -50,7 +50,7 @@ public class RabbitMQConfig {
     /**
      * 过期时间，毫秒单位，临时改为1分钟过期
      */
-    private Integer ttl = 1000 * 60;
+    private Integer ttl = 1000 * 60 * 3;
 
 
     /**

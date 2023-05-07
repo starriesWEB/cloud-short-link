@@ -16,7 +16,10 @@ import org.springframework.stereotype.Component;
 @Component
 @Slf4j
 @RequiredArgsConstructor
-@RabbitListener(queuesToDeclare = {@Queue("order.close.queue")})
+@RabbitListener(queuesToDeclare = {
+        @Queue("order.close.queue"),
+        @Queue("order.update.queue")
+})
 public class ProductOrderMQListener {
 
 

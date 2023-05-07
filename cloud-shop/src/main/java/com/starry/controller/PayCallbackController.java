@@ -68,25 +68,18 @@ public class PayCallbackController {
     @RequestMapping("wechat")
     @ResponseBody
     public Map<String, String> wechatPayCallback(HttpServletRequest request, HttpServletResponse response) {
-
-        log.info(">>>收到回调");
         //获取报文
         String body = getRequestBody(request);
-
         //随机串
         String nonceStr = request.getHeader("Wechatpay-Nonce");
-
         //微信传递过来的签名
         String signature = request.getHeader("Wechatpay-Signature");
-
         //证书序列号（微信平台）
         String serialNo = request.getHeader("Wechatpay-Serial");
-
         //时间戳
         String timestamp = request.getHeader("Wechatpay-Timestamp");
 
         //构造签名串
-
         //应答时间戳\n
         //应答随机串\n
         //应答报文主体\n
