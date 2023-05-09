@@ -6,6 +6,7 @@ import com.starry.exception.BizException;
 import com.starry.model.EventMessage;
 import com.starry.service.TrafficService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.Queue;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
@@ -15,7 +16,8 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RabbitListener(queuesToDeclare = {
-        @Queue("order.traffic.queue")
+        @Queue("order.traffic.queue"),
+        @Queue("traffic.free_init.queue")
 })
 @Slf4j
 public class TrafficMQListener {
@@ -30,7 +32,7 @@ public class TrafficMQListener {
         try{
             trafficService.handleTrafficMessage(eventMessage);
         }catch (Exception e){
-            log.error("消费者失败:{}",eventMessage);
+            log.error("消费者失败:{}|{}",eventMessage, ExceptionUtils.getStackTrace(e));
             throw new BizException(BizCodeEnum.MQ_CONSUME_EXCEPTION);
         }
         log.info("消费成功:{}",eventMessage);

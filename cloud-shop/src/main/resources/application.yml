@@ -2,8 +2,17 @@ server:
   port: 8005
 
 spring:
+  datasource:
+    hikari:
+      maximum-pool-size: 50
+      minimum-idle: 50
+      connection-timeout: 30000
+      connection-test-query: SELECT 1
+      auto-commit: true
+      idle-timeout: 60000
+      max-lifetime: 1800000
   application:
-    name: cloud-link-service
+    name: cloud-shop-service
   cloud:
     nacos:
       discovery:

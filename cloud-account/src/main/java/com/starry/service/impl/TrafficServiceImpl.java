@@ -1,9 +1,11 @@
 package com.starry.service.impl;
 
+import com.alibaba.fastjson.TypeReference;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.starry.controller.request.TrafficPageRequest;
 import com.starry.enums.EventMessageType;
+import com.starry.feign.ProductFeignService;
 import com.starry.interceptor.LoginInterceptor;
 import com.starry.manager.TrafficManager;
 import com.starry.mapper.TrafficMapper;
@@ -11,6 +13,7 @@ import com.starry.model.EventMessage;
 import com.starry.model.LoginUser;
 import com.starry.model.TrafficDO;
 import com.starry.service.TrafficService;
+import com.starry.utils.JsonData;
 import com.starry.utils.JsonUtil;
 import com.starry.vo.ProductVO;
 import com.starry.vo.TrafficVO;
@@ -39,17 +42,18 @@ public class TrafficServiceImpl extends ServiceImpl<TrafficMapper, TrafficDO>
     implements TrafficService{
 
     private final TrafficManager trafficManager;
+    private final ProductFeignService productFeignService;
 
     @Override
     @Transactional(rollbackFor = Exception.class,propagation = Propagation.REQUIRED)
     public void handleTrafficMessage(EventMessage eventMessage) {
         String messageType = eventMessage.getEventMessageType();
+        Long accountNo = eventMessage.getAccountNo();
         if(EventMessageType.PRODUCT_ORDER_PAY.name().equalsIgnoreCase(messageType)){
             //订单已经支付，新增流量
             String content = eventMessage.getContent();
             Map<String, Object> orderInfoMap = JsonUtil.json2Obj(content,Map.class);
             //还原订单商品信息
-            Long accountNo = (Long)orderInfoMap.get("accountNo");
             String outTradeNo = (String)orderInfoMap.get("outTradeNo");
             Integer buyNum = (Integer)orderInfoMap.get("buyNum");
             String productStr = (String) orderInfoMap.get("product");
@@ -75,6 +79,27 @@ public class TrafficServiceImpl extends ServiceImpl<TrafficMapper, TrafficDO>
 
             int rows = trafficManager.add(trafficDO);
             log.info("消费消息新增流量包:rows={},trafficDO={}",rows,trafficDO);
+        }else if(EventMessageType.TRAFFIC_FREE_INIT.name().equalsIgnoreCase(messageType)){
+            //发放免费流量包
+            long productId = Long.parseLong(eventMessage.getBizId());
+
+            JsonData jsonData = productFeignService.detail(productId);
+
+            ProductVO productVO = jsonData.getData(new TypeReference<ProductVO>(){});
+            //构建流量包对象
+            TrafficDO trafficDO = TrafficDO.builder()
+                    .accountNo(accountNo)
+                    .dayLimit(productVO.getDayTimes())
+                    .dayUsed(0)
+                    .totalLimit(productVO.getTotalTimes())
+                    .pluginType(productVO.getPluginType())
+                    .level(productVO.getLevel())
+                    .productId(productVO.getId())
+                    .outTradeNo("free_init")
+                    .expiredDate(new Date())
+                    .build();
+
+            trafficManager.add(trafficDO);
         }
     }
 

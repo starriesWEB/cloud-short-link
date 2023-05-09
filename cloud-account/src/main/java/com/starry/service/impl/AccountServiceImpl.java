@@ -1,14 +1,17 @@
 package com.starry.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.starry.config.RabbitMQConfig;
 import com.starry.controller.request.AccountLoginRequest;
 import com.starry.controller.request.AccountRegisterRequest;
 import com.starry.enums.AuthTypeEnum;
 import com.starry.enums.BizCodeEnum;
+import com.starry.enums.EventMessageType;
 import com.starry.enums.SendCodeEnum;
 import com.starry.manager.AccountManager;
 import com.starry.mapper.AccountMapper;
 import com.starry.model.AccountDO;
+import com.starry.model.EventMessage;
 import com.starry.model.LoginUser;
 import com.starry.service.AccountService;
 import com.starry.service.NotifyService;
@@ -20,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.Md5Crypt;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
@@ -34,6 +38,11 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, AccountDO>
 
     private final NotifyService notifyService;
     private final AccountManager accountManager;
+    private final RabbitTemplate rabbitTemplate;
+    private final RabbitMQConfig rabbitMQConfig;
+
+
+    private static final Long FREE_TRAFFIC_PRODUCT_ID = 1L;
 
     @Override
     public JsonData register(AccountRegisterRequest registerRequest) {
@@ -64,7 +73,6 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, AccountDO>
         int rows = accountManager.insert(accountDO);
         log.info("rows:{},注册成功:{}", rows, accountDO);
 
-        //用户注册成功，发放福利 TODO
         userRegisterInitTask(accountDO);
 
         return JsonData.buildSuccess();
@@ -95,6 +103,16 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, AccountDO>
      */
     private void userRegisterInitTask(AccountDO accountDO) {
 
+        EventMessage eventMessage = EventMessage.builder()
+                .messageId(IDUtil.genSnowFlakeID().toString())
+                .accountNo(accountDO.getAccountNo())
+                .eventMessageType(EventMessageType.TRAFFIC_FREE_INIT.name())
+                .bizId(FREE_TRAFFIC_PRODUCT_ID.toString())
+                .build();
+
+        //发送发放流量包消息
+        rabbitTemplate.convertAndSend(rabbitMQConfig.getTrafficEventExchange(),
+                rabbitMQConfig.getTrafficFreeInitRoutingKey(),eventMessage);
     }
 }
 
