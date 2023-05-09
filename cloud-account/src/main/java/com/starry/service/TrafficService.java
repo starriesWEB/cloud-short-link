@@ -2,8 +2,10 @@ package com.starry.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.starry.controller.request.TrafficPageRequest;
+import com.starry.controller.request.UseTrafficRequest;
 import com.starry.model.EventMessage;
 import com.starry.model.TrafficDO;
+import com.starry.utils.JsonData;
 import com.starry.vo.TrafficVO;
 
 import java.util.Map;
@@ -25,4 +27,11 @@ public interface TrafficService extends IService<TrafficDO> {
      * @return
      */
     boolean deleteExpireTraffic();
+
+    /**
+     * 扣减流量包
+     * @param useTrafficRequest
+     * @return
+     */
+    JsonData reduce(UseTrafficRequest useTrafficRequest);
 }

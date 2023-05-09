@@ -3,6 +3,8 @@ package com.starry.manager;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.starry.model.TrafficDO;
 
+import java.util.List;
+
 public interface TrafficManager {
 
     /**
@@ -32,18 +34,45 @@ public interface TrafficManager {
     TrafficDO findByIdAndAccountNo(Long trafficId,Long accountNo);
 
 
-    /**
-     * 增加某个流量包天使用次数
-     * @param currentTrafficId
-     * @param accountNo
-     * @param dayUsedTimes
-     * @return
-     */
-    int addDayUsedTimes(long currentTrafficId, Long accountNo, int dayUsedTimes);
 
     /**
      * 删除过期流量包
      * @return
      */
     boolean deleteExpireTraffic();
+
+
+    /**
+     * 查找可用的短链流量包(未过期),包括免费流量包
+     * @param accountNo
+     * @return
+     */
+    List<TrafficDO> selectAvailableTraffics(Long accountNo);
+
+    /**
+     * 给某个流量包增加使用次数
+     *
+     * @param accountNo
+     * @param usedTimes
+     * @return
+     */
+    int addDayUsedTimes(Long accountNo, Long trafficId, Integer usedTimes) ;
+
+    /**
+     * 恢复流量包使用当天次数
+     * @param accountNo
+     * @param trafficId
+     * @param useTimes
+     */
+    int releaseUsedTimes(Long accountNo, Long trafficId, Integer useTimes);
+
+
+    /**
+     * 批量更新流量包使用次数为0
+     * @param accountNo
+     * @param unUpdatedTrafficIds
+     */
+    int batchUpdateUsedTimes(Long accountNo, List<Long> unUpdatedTrafficIds);
+
+
 }

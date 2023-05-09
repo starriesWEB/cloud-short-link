@@ -5,24 +5,33 @@
 <mapper namespace="com.starry.mapper.TrafficMapper">
 
     <resultMap id="BaseResultMap" type="com.starry.model.TrafficDO">
-            <id property="id" column="id" jdbcType="BIGINT"/>
-            <result property="dayLimit" column="day_limit" jdbcType="INTEGER"/>
-            <result property="dayUsed" column="day_used" jdbcType="INTEGER"/>
-            <result property="totalLimit" column="total_limit" jdbcType="INTEGER"/>
-            <result property="accountNo" column="account_no" jdbcType="BIGINT"/>
-            <result property="outTradeNo" column="out_trade_no" jdbcType="VARCHAR"/>
-            <result property="level" column="level" jdbcType="VARCHAR"/>
-            <result property="expiredDate" column="expired_date" jdbcType="DATE"/>
-            <result property="pluginType" column="plugin_type" jdbcType="VARCHAR"/>
-            <result property="productId" column="product_id" jdbcType="BIGINT"/>
-            <result property="gmtCreate" column="gmt_create" jdbcType="TIMESTAMP"/>
-            <result property="gmtModified" column="gmt_modified" jdbcType="TIMESTAMP"/>
+        <id property="id" column="id" jdbcType="BIGINT"/>
+        <result property="dayLimit" column="day_limit" jdbcType="INTEGER"/>
+        <result property="dayUsed" column="day_used" jdbcType="INTEGER"/>
+        <result property="totalLimit" column="total_limit" jdbcType="INTEGER"/>
+        <result property="accountNo" column="account_no" jdbcType="BIGINT"/>
+        <result property="outTradeNo" column="out_trade_no" jdbcType="VARCHAR"/>
+        <result property="level" column="level" jdbcType="VARCHAR"/>
+        <result property="expiredDate" column="expired_date" jdbcType="DATE"/>
+        <result property="pluginType" column="plugin_type" jdbcType="VARCHAR"/>
+        <result property="productId" column="product_id" jdbcType="BIGINT"/>
+        <result property="gmtCreate" column="gmt_create" jdbcType="TIMESTAMP"/>
+        <result property="gmtModified" column="gmt_modified" jdbcType="TIMESTAMP"/>
     </resultMap>
 
     <sql id="Base_Column_List">
         id,day_limit,day_used,
         total_limit,account_no,out_trade_no,
-        level,expired_date,plugin_type,
+        `level`,expired_date,plugin_type,
         product_id,gmt_create,gmt_modified
     </sql>
+
+    <update id="addDayUsedTimes">
+        update traffic
+        set day_used = day_used + #{usedTimes}
+        where account_no = #{accountNo}
+          and id = #{trafficId}
+          and day_limit >= day_used + #{usedTimes}
+        limit 1
+    </update>
 </mapper>

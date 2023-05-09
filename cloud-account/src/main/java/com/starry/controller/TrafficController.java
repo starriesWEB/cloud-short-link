@@ -28,10 +28,7 @@ public class TrafficController {
      */
     @PostMapping("reduce")
     public JsonData useTraffic(@RequestBody UseTrafficRequest useTrafficRequest, HttpServletRequest request){
-
-        //具体使用流量包逻辑  TODO
-
-        return JsonData.buildSuccess();
+        return trafficService.reduce(useTrafficRequest);
     }
 
 
