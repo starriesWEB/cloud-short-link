@@ -1,5 +1,6 @@
 package com.starry.manager.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -67,5 +68,15 @@ public class TrafficManagerImpl implements TrafficManager {
                         .eq(TrafficDO::getId, currentTrafficId)
                         .set(TrafficDO::getDayUsed, dayUsedTimes)
         );
+    }
+
+    @Override
+    public boolean deleteExpireTraffic() {
+        int rows = trafficMapper.delete(
+                Wrappers.lambdaQuery(TrafficDO.class)
+                        .le(TrafficDO::getExpiredDate, new Date())
+        );
+        log.info("删除过期流量包行数：rows={}",rows);
+        return true;
     }
 }

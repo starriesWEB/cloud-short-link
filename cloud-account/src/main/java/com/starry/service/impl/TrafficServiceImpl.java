@@ -127,6 +127,11 @@ public class TrafficServiceImpl extends ServiceImpl<TrafficMapper, TrafficDO>
         return beanProcess(trafficDO);
     }
 
+    @Override
+    public boolean deleteExpireTraffic() {
+        return trafficManager.deleteExpireTraffic();
+    }
+
 
     private TrafficVO beanProcess(TrafficDO trafficDO) {
         TrafficVO trafficVO = new TrafficVO();

@@ -3,14 +3,16 @@ server:
 
 spring:
   datasource:
+    type: com.zaxxer.hikari.HikariDataSource
     hikari:
-      maximum-pool-size: 50
       minimum-idle: 50
-      connection-timeout: 30000
-      connection-test-query: SELECT 1
+      maximum-pool-size: 50
       auto-commit: true
-      idle-timeout: 60000
-      max-lifetime: 1800000
+      idle-timeout: 30000
+      pool-name: HikariCP
+      max-lifetime: 900000
+      connection-timeout: 10000
+      connection-test-query: SELECT 1
   application:
     name: cloud-account-service
   cloud:
@@ -102,3 +104,18 @@ aliyun:
     access-key-id: LTAI5t8N2UQL1b6jAT3GTqHg
     access-key-secret: UnXHx4uPYqthruSFmNqjG7ZEIspJAX
 
+logging:
+  config: classpath:logback.xml
+
+xxl:
+  job:
+    admin:
+      addresses: http://127.0.0.1:8080/xxl-job-admin
+    accessToken: shortLink
+    executor:
+      appname: traffic-app-executor
+      address:
+      ip:
+      port: 9999
+      logpath: ./data/logs/xxl-job/executor
+      logretentiondays: 30
