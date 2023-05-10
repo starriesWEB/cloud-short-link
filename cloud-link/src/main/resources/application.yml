@@ -1,6 +1,9 @@
 server:
   port: 8003
 
+rpc:
+  token: shortLinkService
+
 spring:
   application:
     name: cloud-link-service

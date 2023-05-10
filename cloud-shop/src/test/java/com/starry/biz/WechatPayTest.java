@@ -205,7 +205,7 @@ public class WechatPayTest {
     @Test
     public void testNativeRefundOrder() throws IOException {
 
-        String outTradeNo = "a5rtNF2vJGHvvJYeD0gc6AVShSNZUrDs";
+        String outTradeNo = "2CLLiK9OVJMiwXAyDIYTS1zwOiMnEcwr";
         String refundNo = CommonUtil.getStringNumRandom(32);
 
         // 请求body参数

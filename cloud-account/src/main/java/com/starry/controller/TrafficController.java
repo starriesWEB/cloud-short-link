@@ -6,9 +6,9 @@ import com.starry.service.TrafficService;
 import com.starry.utils.JsonData;
 import com.starry.vo.TrafficVO;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
 
 @RequiredArgsConstructor
@@ -18,16 +18,19 @@ public class TrafficController {
 
     private final TrafficService trafficService;
 
-
+    @Value("${rpc.token}")
+    private String rpcToken;
     /**
      * 使用流量包API
      *
      * @param useTrafficRequest
-     * @param request
      * @return
      */
     @PostMapping("reduce")
-    public JsonData useTraffic(@RequestBody UseTrafficRequest useTrafficRequest, HttpServletRequest request){
+    public JsonData useTraffic(@RequestBody UseTrafficRequest useTrafficRequest, @RequestHeader("rpc-token") String rpcToken){
+        if (!this.rpcToken.equalsIgnoreCase(rpcToken)) {
+            return JsonData.buildError("非法访问");
+        }
         return trafficService.reduce(useTrafficRequest);
     }
 

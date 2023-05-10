@@ -1,6 +1,9 @@
 server:
   port: 8001
 
+rpc:
+  token: shortLinkService
+
 spring:
   datasource:
     type: com.zaxxer.hikari.HikariDataSource

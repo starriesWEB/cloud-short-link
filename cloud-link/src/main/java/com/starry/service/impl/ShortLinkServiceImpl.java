@@ -3,13 +3,13 @@ package com.starry.service.impl;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.starry.component.ShortLinkComponent;
 import com.starry.config.RabbitMQConfig;
-import com.starry.controller.request.ShortLinkAddRequest;
-import com.starry.controller.request.ShortLinkDelRequest;
-import com.starry.controller.request.ShortLinkPageRequest;
-import com.starry.controller.request.ShortLinkUpdateRequest;
+import com.starry.constant.RedisKey;
+import com.starry.controller.request.*;
+import com.starry.enums.BizCodeEnum;
 import com.starry.enums.DomainTypeEnum;
 import com.starry.enums.EventMessageType;
 import com.starry.enums.ShortLinkStateEnum;
+import com.starry.feign.TrafficFeignService;
 import com.starry.interceptor.LoginInterceptor;
 import com.starry.manager.DomainManager;
 import com.starry.manager.GroupCodeMappingManager;
@@ -25,6 +25,7 @@ import com.starry.utils.JsonUtil;
 import com.starry.vo.ShortLinkVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -53,16 +54,22 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
     private final GroupCodeMappingManager groupCodeMappingManager;
     private final DomainManager domainManager;
     private final LinkGroupManager linkGroupManager;
+    private final TrafficFeignService trafficFeignService;
 
 
     private static final DefaultRedisScript<Long> LOCK_SCRIPT;
+    private static final DefaultRedisScript<Long> TRAFFIC_DAY_SCRIPT;
 
     static {
         // KEYS[1]是短链码，ARGV[1]是accountNo,ARGV[2]是过期时间
-        String script = "if redis.call('EXISTS',KEYS[1])==0 then redis.call('set',KEYS[1],ARGV[1]); redis.call('expire',KEYS[1],ARGV[2]); return 1;" +
+        String script1 = "if redis.call('EXISTS',KEYS[1])==0 then redis.call('set',KEYS[1],ARGV[1]); redis.call('expire',KEYS[1],ARGV[2]); return 1;" +
                 " elseif redis.call('get',KEYS[1]) == ARGV[1] then return 2;" +
                 " else return 0; end;";
-        LOCK_SCRIPT = new DefaultRedisScript<>(script, Long.class);
+        LOCK_SCRIPT = new DefaultRedisScript<>(script1, Long.class);
+
+        // 当天流量包-1
+        String script2 = "if redis.call('get',KEYS[1]) then return redis.call('decr',KEYS[1]) else return 0 end";
+        TRAFFIC_DAY_SCRIPT = new DefaultRedisScript<>(script2, Long.class);
     }
 
 
@@ -79,20 +86,33 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
 
     @Override
     public JsonData createShortLink(ShortLinkAddRequest request) {
-
         Long accountNo = LoginInterceptor.threadLocal.get().getAccountNo();
-        String prefixUrl = CommonUtil.addUrlPrefix(request.getOriginalUrl());
-        request.setOriginalUrl(prefixUrl);
-        EventMessage eventMessage = EventMessage.builder()
-                .accountNo(accountNo)
-                .content(JsonUtil.obj2Json(request))
-                .messageId(IDUtil.genSnowFlakeID().toString())
-                .eventMessageType(EventMessageType.SHORT_LINK_ADD.name())
-                .build();
 
-        rabbitTemplate.convertAndSend(rabbitMQConfig.getShortLinkEventExchange(), rabbitMQConfig.getShortLinkAddRoutingKey(), eventMessage);
+        String cacheKey = String.format(RedisKey.DAY_TOTAL_TRAFFIC, accountNo);
+        /*
+        流量包预扣减，key 是否存在
+        key 不存在就是当天未更新，或者购买了新流量包，返回0
+        key 存在，-1 后判断是否 >0
+         */
+        Long leftTimes = redisTemplate.execute(TRAFFIC_DAY_SCRIPT, Collections.singletonList(cacheKey), StringUtils.EMPTY);
+        log.info("今日流量包剩余次数:{}", leftTimes);
 
-        return JsonData.buildSuccess();
+        if (leftTimes >= 0) {
+            String prefixUrl = CommonUtil.addUrlPrefix(request.getOriginalUrl());
+            request.setOriginalUrl(prefixUrl);
+            EventMessage eventMessage = EventMessage.builder()
+                    .accountNo(accountNo)
+                    .content(JsonUtil.obj2Json(request))
+                    .messageId(IDUtil.genSnowFlakeID().toString())
+                    .eventMessageType(EventMessageType.SHORT_LINK_ADD.name())
+                    .build();
+
+            rabbitTemplate.convertAndSend(rabbitMQConfig.getShortLinkEventExchange(), rabbitMQConfig.getShortLinkAddRoutingKey(), eventMessage);
+            return JsonData.buildSuccess();
+        } else {
+            return JsonData.buildResult(BizCodeEnum.TRAFFIC_REDUCE_FAIL);
+        }
+
     }
 
     /**
@@ -133,20 +153,27 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                 //先判断是否短链码被占用
                 ShortLinkDO shortLinCodeDOInDB = shortLinkManager.findByShortLinCode(shortLinkCode);
                 if (shortLinCodeDOInDB == null) {
-                    ShortLinkDO shortLinkDO = ShortLinkDO.builder()
-                            .accountNo(accountNo)
-                            .code(shortLinkCode)
-                            .title(addRequest.getTitle())
-                            .originalUrl(addRequest.getOriginalUrl())
-                            .domain(domainDO.getValue())
-                            .groupId(linkGroupDO.getId())
-                            .expired(addRequest.getExpired())
-                            .sign(originalUrlDigest)
-                            .state(ShortLinkStateEnum.ACTIVE.name())
-                            .del(0)
-                            .build();
-                    shortLinkManager.addShortLink(shortLinkDO);
-                    return true;
+                    boolean reduceFlag = reduceTraffic(eventMessage, shortLinkCode);
+                    if (reduceFlag) {
+                        ShortLinkDO shortLinkDO = ShortLinkDO.builder()
+                                .accountNo(accountNo)
+                                .code(shortLinkCode)
+                                .title(addRequest.getTitle())
+                                .originalUrl(addRequest.getOriginalUrl())
+                                .domain(domainDO.getValue())
+                                .groupId(linkGroupDO.getId())
+                                .expired(addRequest.getExpired())
+                                .sign(originalUrlDigest)
+                                .state(ShortLinkStateEnum.ACTIVE.name())
+                                .del(0)
+                                .build();
+                        shortLinkManager.addShortLink(shortLinkDO);
+                        return true;
+                    } else {
+                        log.error("C端流量包无可用额度{}", eventMessage);
+                        return false;
+                    }
+
                 } else {
                     log.error("C端短链码重复:{}", eventMessage);
                     duplicateCodeFlag = true;
@@ -193,13 +220,34 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
         return false;
     }
 
+    /**
+     * 扣减流量包
+     *
+     * @param eventMessage
+     * @param shortLinkCode
+     * @return
+     */
+    private boolean reduceTraffic(EventMessage eventMessage, String shortLinkCode) {
+        UseTrafficRequest request = UseTrafficRequest.builder()
+                .accountNo(eventMessage.getAccountNo())
+                .bizId(shortLinkCode)
+                .build();
+
+        JsonData jsonData = trafficFeignService.useTraffic(request);
+        if (jsonData.getCode() != 0) {
+            log.error("流量包不足，扣减失败:{}", eventMessage);
+            return false;
+        }
+        return true;
+    }
+
     @Override
     public boolean handleUpdateShortLink(EventMessage eventMessage) {
         Long accountNo = eventMessage.getAccountNo();
         String messageType = eventMessage.getEventMessageType();
         ShortLinkUpdateRequest request = JsonUtil.json2Obj(eventMessage.getContent(), ShortLinkUpdateRequest.class);
         DomainDO domainDO = checkDomain(request.getDomainType(), request.getDomainId(), accountNo);
-        if(EventMessageType.SHORT_LINK_UPDATE_LINK.name().equalsIgnoreCase(messageType)){
+        if (EventMessageType.SHORT_LINK_UPDATE_LINK.name().equalsIgnoreCase(messageType)) {
             ShortLinkDO shortLinkDO = ShortLinkDO.builder()
                     .code(request.getCode())
                     .title(request.getTitle())
@@ -207,9 +255,9 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                     .accountNo(accountNo)
                     .build();
             int rows = shortLinkManager.update(shortLinkDO);
-            log.debug("更新C端短链，rows={}",rows);
+            log.debug("更新C端短链，rows={}", rows);
             return true;
-        } else if(EventMessageType.SHORT_LINK_UPDATE_MAPPING.name().equalsIgnoreCase(messageType)){
+        } else if (EventMessageType.SHORT_LINK_UPDATE_MAPPING.name().equalsIgnoreCase(messageType)) {
             GroupCodeMappingDO groupCodeMappingDO = GroupCodeMappingDO.builder()
                     .id(request.getMappingId())
                     .groupId(request.getGroupId())
@@ -218,7 +266,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                     .domain(domainDO.getValue())
                     .build();
             int rows = groupCodeMappingManager.update(groupCodeMappingDO);
-            log.debug("更新B端短链，rows={}",rows);
+            log.debug("更新B端短链，rows={}", rows);
             return true;
         }
         return false;
@@ -230,15 +278,15 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
         Long accountNo = eventMessage.getAccountNo();
         String messageType = eventMessage.getEventMessageType();
         ShortLinkDelRequest request = JsonUtil.json2Obj(eventMessage.getContent(), ShortLinkDelRequest.class);
-        if(EventMessageType.SHORT_LINK_DEL_LINK.name().equalsIgnoreCase(messageType)){
+        if (EventMessageType.SHORT_LINK_DEL_LINK.name().equalsIgnoreCase(messageType)) {
             ShortLinkDO shortLinkDO = ShortLinkDO.builder()
                     .code(request.getCode())
                     .accountNo(accountNo)
                     .build();
             int rows = shortLinkManager.del(shortLinkDO);
-            log.debug("删除C端短链:{}",rows);
+            log.debug("删除C端短链:{}", rows);
             return true;
-        }else if(EventMessageType.SHORT_LINK_DEL_MAPPING.name().equalsIgnoreCase(messageType)){
+        } else if (EventMessageType.SHORT_LINK_DEL_MAPPING.name().equalsIgnoreCase(messageType)) {
             GroupCodeMappingDO groupCodeMappingDO = GroupCodeMappingDO.builder()
                     .id(request.getMappingId())
                     .accountNo(accountNo)
@@ -246,7 +294,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                     .code(request.getCode())
                     .build();
             int rows = groupCodeMappingManager.del(groupCodeMappingDO);
-            log.debug("删除B端短链:{}",rows);
+            log.debug("删除B端短链:{}", rows);
             return true;
         }
         return false;

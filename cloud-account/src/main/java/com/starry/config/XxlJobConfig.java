@@ -3,10 +3,8 @@ package com.starry.config;
 import com.xxl.job.core.executor.impl.XxlJobSpringExecutor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
-@Configuration
+//@Configuration
 @Slf4j
 public class XxlJobConfig {
 
@@ -33,7 +31,7 @@ public class XxlJobConfig {
     private int logRetentionDays;
 
 
-    @Bean
+    //@Bean
     public XxlJobSpringExecutor xxlJobSpringExecutor(){
 
         log.info("流量包 xxl job 配置初始化");
