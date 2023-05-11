@@ -62,5 +62,10 @@ public enum EventMessageType {
     /**
      * 免费流量包发放消息
      */
-    TRAFFIC_FREE_INIT;
+    TRAFFIC_FREE_INIT,
+
+    /**
+     * 使用流量包
+     */
+    TRAFFIC_USED;
 }

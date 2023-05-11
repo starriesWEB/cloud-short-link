@@ -62,6 +62,18 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
 
     static {
         // KEYS[1]是短链码，ARGV[1]是accountNo,ARGV[2]是过期时间
+
+        /*
+            if redis.call('EXISTS', KEYS[1]) == 0 then
+                redis.call('SET', KEYS[1], ARGV[1])
+                redis.call('EXPIRE', KEYS[1], ARGV[2])
+                return 1
+            elseif redis.call('GET', KEYS[1]) == ARGV[1] then
+                return 2
+            else
+                return 0
+            end;
+        * */
         String script1 = "if redis.call('EXISTS',KEYS[1])==0 then redis.call('set',KEYS[1],ARGV[1]); redis.call('expire',KEYS[1],ARGV[2]); return 1;" +
                 " elseif redis.call('get',KEYS[1]) == ARGV[1] then return 2;" +
                 " else return 0; end;";

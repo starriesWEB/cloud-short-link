@@ -120,15 +120,8 @@ public class TrafficManagerImpl implements TrafficManager {
      * @return
      */
     @Override
-    public int releaseUsedTimes(Long accountNo, Long trafficId, Integer usedTimes) {
-        return trafficMapper.update(null,
-                Wrappers.lambdaUpdate(TrafficDO.class)
-                        .eq(TrafficDO::getAccountNo, accountNo)
-                        .eq(TrafficDO::getId, trafficId)
-                        .setSql("day_used = day_used - " + usedTimes)
-                        .ge(TrafficDO::getDayUsed, 0)
-                        .last("limit 1")
-        );
+    public int releaseUsedTimes(Long accountNo, Long trafficId, Integer usedTimes, String useDateStr) {
+        return trafficMapper.releaseUsedTimes(accountNo, trafficId, usedTimes, useDateStr);
     }
 
     @Override

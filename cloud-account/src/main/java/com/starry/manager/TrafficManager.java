@@ -64,7 +64,7 @@ public interface TrafficManager {
      * @param trafficId
      * @param useTimes
      */
-    int releaseUsedTimes(Long accountNo, Long trafficId, Integer useTimes);
+    int releaseUsedTimes(Long accountNo, Long trafficId, Integer useTimes, String useDateStr);
 
 
     /**

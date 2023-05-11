@@ -11,6 +11,7 @@ public interface TrafficFeignService {
 
     /**
      * 使用流量包
+     * 携带请求头，内部feign调用，身份认证
      * @param request
      * @return
      */

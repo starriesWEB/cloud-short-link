@@ -12,5 +12,8 @@ import lombok.NoArgsConstructor;
 public class UseTrafficRequest {
 
     private Long accountNo;
-
+    /**
+     * 业务id, 短链码
+     */
+    private String bizId;
 }
